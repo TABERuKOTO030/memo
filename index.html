@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'self' https://api.github.com https://gist.githubusercontent.com; form-action 'none'; base-uri 'none'">
+<meta name="theme-color" content="#AEEDE7"><meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<title>口袋备忘录</title>
+<style>
+:root{--bg:#F3F5F6;--card:#fff;--aqua:#AEEDE7;--mint:#7ADFD5;--mintd:#3FA9A0;--pink:#FBD3E4;--pinkl:#FDEAF2;--lav:#E4DEFB;--lavd:#8C80C9;--gray:#E9ECEE;--text:#4E6478;--sub:#93A3B2;--rose:#C2577F;--fs:15px;--ease:cubic-bezier(.22,.8,.3,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font:var(--fs)/1.6 -apple-system,"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit;border:0;outline:0;background:none}
+button{cursor:pointer}
+.hidden{display:none!important}
+.stripe{height:22px;background:repeating-linear-gradient(-45deg,var(--pink) 0 14px,#fff 14px 28px)}
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.views{flex:1;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;overflow-y:auto;padding-bottom:110px;opacity:0;transform:translateX(24px);pointer-events:none;transition:opacity .32s var(--ease),transform .38s var(--ease)}
+.view.on{opacity:1;transform:none;pointer-events:auto}
+.view.left{transform:translateX(-24px)}
+.head{background:var(--aqua);padding:calc(env(safe-area-inset-top) + 0px) 0 0;position:relative}
+.head .in{padding:16px 22px 24px;position:relative}
+.head h1{font-size:26px;font-weight:800;letter-spacing:2px;color:#fff;text-shadow:0 2px 0 rgba(63,169,160,.25)}
+.head .sub{font-size:12px;color:var(--mintd);letter-spacing:1px}
+.head .band{height:10px;background:var(--lav)}
+.spark{position:absolute;color:#fff;font-size:14px;opacity:.9}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;background:#fff;color:var(--mintd)}
+.pill.p{background:var(--pinkl);color:var(--rose)}.pill.l{background:var(--lav);color:var(--lavd)}
+.sec{padding:18px 18px 0}
+.sec-t{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:10px;font-size:15px}
+.num{font:700 11px/1 ui-monospace,Menlo,monospace;background:var(--mint);color:#fff;padding:4px 6px;border-radius:6px}
+.num.p{background:#F2A9C6}.num.l{background:#B5A9EE}
+.sec-t .more{margin-left:auto;font-size:12px;color:var(--sub);font-weight:400}
+.card{background:var(--card);border-radius:16px;padding:14px 16px;position:relative;animation:pop .45s var(--ease) both}
+.tape{position:absolute;top:-8px;left:50%;width:58px;height:16px;margin-left:-29px;background:var(--pink);opacity:.85;transform:rotate(-3deg);border-radius:2px}
+.tape.a{background:var(--aqua)}.tape.l{background:var(--lav)}
+.clip{position:absolute;top:-10px;right:18px;width:10px;height:28px;border-radius:6px;border:2.5px solid #B9C4CC;border-bottom-color:transparent}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#fff;border-radius:14px;padding:12px 14px}
+.stat b{display:block;font-size:24px;color:var(--mintd)}.stat span{font-size:12px;color:var(--sub)}
+.tip{background:var(--lav);border-radius:16px;padding:16px;color:#5C5791}
+.tip .q{font-size:15px;line-height:1.7;margin:6px 0 10px}
+.btn{background:var(--mint);color:#fff;border-radius:12px;padding:10px 16px;font-weight:600;transition:transform .15s}
+.btn:active{transform:scale(.96)}.btn.s{padding:6px 12px;font-size:13px;border-radius:10px}
+.btn.g{background:var(--gray);color:var(--text)}.btn.p{background:#F5A3C3}.btn.w{background:#fff;color:var(--lavd)}
+.btn.d{background:var(--pinkl);color:var(--rose)}
+.note{background:#fff;border-radius:16px;padding:14px 16px 12px;margin-bottom:12px;position:relative;overflow:hidden;animation:pop .4s var(--ease) both}
+.note .bar{position:absolute;left:0;top:0;bottom:0;width:5px}
+.note h3{font-size:16px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note .ex{color:var(--sub);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:11px;color:var(--sub)}
+.tag{padding:1px 8px;border-radius:99px;font-size:11px;color:#4E6478}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:5px 14px;border-radius:99px;background:#fff;font-size:13px;color:var(--text);transition:all .2s}
+.chip.on{background:var(--text);color:#fff}
+.search{margin:14px 18px 10px;background:#fff;border-radius:14px;padding:10px 14px;display:flex;gap:8px;align-items:center;color:var(--sub)}
+.search input{flex:1;color:var(--text)}
+.todo{display:flex;align-items:center;gap:10px;padding:10px 0}
+.todo+.todo{border-top:1px dashed #E6EAED}
+.ck{width:22px;height:22px;border-radius:8px;background:var(--gray);flex:none;display:grid;place-items:center;color:#fff;font-size:13px;transition:background .2s}
+.todo.done .ck{background:var(--mint)}.todo.done .tx{color:var(--sub);text-decoration:line-through}
+.tx{flex:1}.tm{font-size:12px;color:var(--mintd);background:#E8F8F6;padding:1px 8px;border-radius:99px}
+.od{font-size:11px;color:var(--rose);background:var(--pinkl);padding:1px 7px;border-radius:99px}
+.x{color:#C3CDD5;font-size:18px;padding:0 4px}
+.row{display:flex;gap:8px;align-items:center}
+.inp{background:#F2F6F8;border-radius:12px;padding:10px 12px;width:100%}
+.tabs{position:fixed;left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));background:#fff;border-radius:22px;display:flex;padding:6px;box-shadow:0 8px 24px rgba(78,100,120,.08);z-index:5}
+.tabs button{flex:1;padding:8px 0 6px;border-radius:16px;font-size:11px;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .25s var(--ease)}
+.tabs button i{font-style:normal;font-size:18px;line-height:1}
+.tabs button.on{background:var(--aqua);color:var(--mintd);font-weight:700}
+.fab{position:fixed;right:22px;bottom:calc(92px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:18px;background:#F5A3C3;color:#fff;font-size:30px;line-height:54px;z-index:4;box-shadow:0 6px 18px rgba(245,163,195,.35);transition:transform .2s}
+.fab:active{transform:scale(.92)}
+/* sheet */
+.mask{position:fixed;inset:0;background:rgba(78,100,120,.25);opacity:0;pointer-events:none;transition:opacity .3s;z-index:10}
+.mask.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;top:28px;background:var(--bg);border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .42s var(--ease);z-index:11;display:flex;flex-direction:column;overflow:hidden}
+.sheet.on{transform:none}
+.sheet.small{top:auto;max-height:80%}
+.sh-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#fff}
+.grab{width:40px;height:4px;border-radius:4px;background:#DCE2E6;margin:8px auto 0}
+.sh-b{flex:1;overflow-y:auto;padding:14px 16px 30px}
+.title-in{font-size:20px;font-weight:700;width:100%;padding:6px 0}
+.ed{min-height:220px;background:#fff;border-radius:16px;padding:14px 16px;outline:0;line-height:1.75;word-break:break-word}
+.ed:empty:before{content:'写点什么吧…';color:#C3CDD5}
+.tool{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fff;border-radius:14px;padding:8px 10px;margin:10px 0}
+.tool button{min-width:32px;height:32px;border-radius:10px;background:#F2F6F8;font-size:13px;padding:0 8px}
+.sw{width:24px;height:24px;border-radius:50%;flex:none;transition:transform .15s}
+.sw.on{transform:scale(1.15);box-shadow:0 0 0 3px #fff,0 0 0 5px #C9D3DA}
+.lbl{font-size:12px;color:var(--sub);margin:14px 2px 6px;letter-spacing:1px}
+.set{background:#fff;border-radius:16px;padding:4px 16px;margin-bottom:12px}
+.set .it{display:flex;align-items:center;gap:10px;padding:12px 0}
+.set .it+.it{border-top:1px solid #F0F3F5}
+.set .it span{flex:1}
+.toast{position:fixed;left:50%;top:calc(20px + env(safe-area-inset-top));transform:translate(-50%,-30px);opacity:0;background:var(--text);color:#fff;padding:8px 16px;border-radius:12px;font-size:13px;z-index:50;transition:all .3s var(--ease);pointer-events:none;max-width:86%}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+/* lock */
+.lock{position:fixed;inset:0;z-index:30;background:var(--aqua);overflow-y:auto;transition:opacity .45s,transform .5s var(--ease)}
+.lock.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.lock .in{padding:10px 22px 40px;position:relative}
+.greet{color:var(--mintd);font-size:14px;margin-top:20px}
+.clock{font:200 84px/1 -apple-system,"Helvetica Neue",sans-serif;color:#fff;letter-spacing:-2px;text-shadow:0 3px 0 rgba(63,169,160,.18);margin:6px 0}
+.date{color:#fff;font-size:16px;font-weight:600}
+.lcard{background:rgba(255,255,255,.92);border-radius:18px;padding:14px 16px;margin-top:14px;position:relative}
+.ring{width:66px;height:66px;flex:none}
+.pbar{height:6px;background:#EAF3F2;border-radius:6px;overflow:hidden;margin-top:4px}.pbar i{display:block;height:100%;background:var(--mint);border-radius:6px}
+.unl{display:flex;gap:8px;margin-top:16px}
+.unl input{flex:1;background:#fff;border-radius:14px;padding:12px 14px}
+.empty{text-align:center;color:var(--sub);font-size:13px;padding:26px 0}
+.ph{background:var(--gray);border-radius:12px;height:70px;display:grid;place-items:center;color:#B7C2CB;font-size:12px}
+.guide{font-size:13px;color:var(--sub);line-height:1.8}
+.guide b{color:var(--text)}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="app" id="app">
+ <div class="views">
+  <!-- HOME -->
+  <section class="view on" id="v-home">
+   <div class="head"><div class="stripe"></div><div class="in">
+    <span class="spark" style="right:30px;top:20px">✦</span><span class="spark" style="right:70px;top:52px;font-size:10px">✦</span>
+    <div class="sub">POCKET MEMO · 口袋备忘录</div><h1 id="h-greet">你好</h1>
+    <div class="row" style="margin-top:6px"><span class="pill" id="h-date"></span><button class="pill l" id="b-screen">🔒 锁屏</button></div>
+   </div><div class="band"></div></div>
+   <div class="sec"><div class="grid2">
+    <div class="stat card"><span>记事</span><b id="s-notes">0</b></div>
+    <div class="stat card" style="animation-delay:.05s"><span>今日待办完成</span><b id="s-todo" style="color:#E489AD">0/0</b></div>
+   </div></div>
+   <div class="sec"><div class="sec-t"><span class="num">01</span>今日提醒<button class="more" data-go="todo">全部 ›</button></div>
+    <div class="card" style="animation-delay:.08s"><div class="tape"></div><div id="h-todos"></div></div></div>
+   <div class="sec"><div class="sec-t"><span class="num l">02</span>每日小贴士</div>
+    <div class="tip card" style="animation-delay:.12s"><span class="pill l" style="background:#fff">TIPS · <span id="tip-cat"></span></span><div class="q" id="tip-q"></div><button class="btn s w" id="tip-next">换一条 ↻</button></div></div>
+   <div class="sec"><div class="sec-t"><span class="num p">03</span>最近记事<button class="more" data-go="notes">全部 ›</button></div><div id="h-notes"></div></div>
+  </section>
+  <!-- NOTES -->
+  <section class="view" id="v-notes">
+   <div class="head"><div class="stripe"></div><div class="in"><div class="sub">NOTES · 记事本</div><h1>记事</h1><span class="spark" style="right:28px;top:24px">✦</span></div><div class="band"></div></div>
+   <div class="search">🔍<input id="q" placeholder="搜索标题、内容、标签"></div>
+   <div class="chips" id="cat-chips"></div>
+   <div class="chips" id="tag-chips" style="margin-top:6px"></div>
+   <div class="sec" id="n-list"></div>
+  </section>
+  <!-- TODO -->
+  <section class="view" id="v-todo">
+   <div class="head"><div class="stripe"></div><div class="in"><div class="sub">TODAY · 今日提醒</div><h1>提醒</h1><span class="pill" id="t-date" style="margin-top:6px"></span></div><div class="band"></div></div>
+   <div class="sec"><div class="card"><div class="clip"></div>
+    <div class="row"><input class="inp" id="t-in" placeholder="添加今天要做的事…" maxlength="80"></div>
+    <div class="row" style="margin-top:8px"><input class="inp" type="time" id="t-time" style="flex:1"><button class="btn" id="t-add">添加</button></div>
+   </div></div>
+   <div class="sec"><div class="sec-t"><span class="num">01</span>待办<span class="more" id="t-prog"></span></div><div class="card"><div id="t-list"></div></div></div>
+  </section>
+  <!-- SETTINGS -->
+  <section class="view" id="v-set">
+   <div class="head"><div class="stripe"></div><div class="in"><div class="sub">SETTINGS · 设置</div><h1>设置</h1></div><div class="band"></div></div>
+   <div class="sec">
+    <div class="sec-t"><span class="num">01</span>外观</div>
+    <div class="set"><div class="it"><span>文字大小</span><input type="range" min="13" max="19" id="fs" style="width:140px"><b id="fs-v" style="width:36px;text-align:right"></b></div></div>
+    <div class="sec-t"><span class="num p">02</span>分类</div>
+    <div class="set" id="cat-set"></div>
+    <div class="sec-t"><span class="num l">03</span>标签颜色</div>
+    <div class="set" id="tag-set"></div>
+    <div class="sec-t"><span class="num">04</span>云端同步（端到端加密）</div>
+    <div class="set">
+     <div class="it"><span>状态</span><small id="sync-st" style="color:var(--sub)">未设置</small></div>
+     <div class="it"><input class="inp" id="tok" type="password" placeholder="粘贴 GitHub Token（仅 gist 权限）" autocomplete="off"><button class="btn s" id="tok-save">保存</button></div>
+     <div class="it" style="gap:8px"><button class="btn s" id="up">上传到云端</button><button class="btn s g" id="down">从云端恢复</button><button class="btn s d" id="tok-del">清除</button></div>
+     <div class="it"><div class="guide"><b>如何获取 Token：</b><br>1. 打开 github.com/settings/tokens<br>2. Generate new token (classic)，只勾选 <b>gist</b><br>3. 复制后粘贴到上方保存。<br>Token 只加密保存在本机密码库里；云端（私密 Gist）只存放加密后的密文 <b>memo-vault.enc</b>，没有密码谁也看不到内容。</div></div>
+    </div>
+    <div class="sec-t"><span class="num p">05</span>备份与安全</div>
+    <div class="set">
+     <div class="it"><span>导出加密备份（可存到 Google Drive）</span><button class="btn s" id="exp">导出</button></div>
+     <div class="it"><span>导入加密备份</span><label class="btn s g">选择文件<input type="file" id="imp" accept=".enc,.json,application/json" class="hidden"></label></div>
+     <div class="it"><span>锁屏显示待办摘要<br><small style="color:var(--sub)">开启后待办文字会以明文存在本机，用于锁定时显示</small></span><input type="checkbox" id="lockprev"></div>
+     <div class="it"><span>修改主密码</span><button class="btn s g" id="chpw">修改</button></div>
+     <div class="it"><span>立即锁定</span><button class="btn s p" id="lock-now">锁定</button></div>
+    </div>
+    <p class="guide" style="text-align:center;padding:10px 0">数据使用 AES-GCM-256 加密 · 10 分钟无操作自动锁定<br>忘记主密码将无法恢复数据</p>
+   </div>
+  </section>
+ </div>
+ <button class="fab" id="fab" title="新记事">+</button>
+ <nav class="tabs" id="tabs">
+  <button data-go="home" class="on"><i>⌂</i>首页</button><button data-go="notes"><i>✎</i>记事</button><button data-go="todo"><i>✓</i>提醒</button><button data-go="set"><i>⚙</i>设置</button>
+ </nav>
+</div>
+<div class="mask" id="mask"></div>
+<!-- editor -->
+<div class="sheet" id="ed-sheet"><div class="grab"></div>
+ <div class="sh-h"><button class="btn s g" id="ed-close">完成</button><span style="flex:1"></span><button class="btn s d" id="ed-del">删除</button></div>
+ <div class="sh-b">
+  <input class="title-in" id="ed-title" placeholder="标题" maxlength="80">
+  <div class="meta" id="ed-meta" style="margin:0 0 6px"></div>
+  <div class="tool" id="ed-tool">
+   <button data-sz="13">小</button><button data-sz="16">中</button><button data-sz="20">大</button><button data-sz="26">特大</button>
+   <button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button>
+   <span style="width:1px;height:20px;background:#E6EAED;margin:0 2px"></span>
+   <span id="ed-colors" class="row" style="gap:6px"></span>
+  </div>
+  <div class="ed" id="ed" contenteditable="true"></div>
+  <div class="lbl">分类</div><div class="chips" id="ed-cats" style="padding:0"></div>
+  <div class="lbl">标签</div><div class="row" style="flex-wrap:wrap" id="ed-tags"></div>
+  <div class="row" style="margin-top:8px"><input class="inp" id="ed-tag-in" placeholder="新标签，回车添加" maxlength="16"><button class="btn s" id="ed-tag-add">添加</button></div>
+ </div>
+</div>
+<!-- small dialog -->
+<div class="sheet small" id="dlg"><div class="grab"></div><div class="sh-b" id="dlg-b"></div></div>
+<!-- lock -->
+<div class="lock" id="lock"><div class="stripe"></div><div class="in">
+ <span class="spark" style="right:34px;top:40px;font-size:20px">✦</span><span class="spark" style="left:60%;top:120px;font-size:12px">✦</span><span class="spark" style="right:20px;top:170px;font-size:10px">○</span>
+ <div class="greet" id="l-greet"></div>
+ <div class="clock" id="l-clock">--:--</div>
+ <div class="date" id="l-date"></div>
+ <div class="lcard"><div class="tape l"></div><div class="row" style="gap:14px">
+  <svg class="ring" viewBox="0 0 66 66"><circle cx="33" cy="33" r="27" fill="none" stroke="#EAF3F2" stroke-width="8"/><circle id="l-ring" cx="33" cy="33" r="27" fill="none" stroke="#7ADFD5" stroke-width="8" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6" transform="rotate(-90 33 33)" style="transition:stroke-dashoffset .8s var(--ease)"/><text id="l-pct" x="33" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#4E6478">–</text></svg>
+  <div style="flex:1"><b style="font-size:14px">今日待办</b><div id="l-todos" style="font-size:13px;margin-top:4px"></div></div></div></div>
+ <div class="lcard" style="background:var(--lav);color:#5C5791"><span class="pill l" style="background:#fff">今日小贴士</span><div id="l-tip" style="margin-top:6px;font-size:14px"></div></div>
+ <div class="grid2" style="margin-top:14px">
+  <div class="lcard" style="margin:0"><small style="color:var(--sub)">本月进度</small><div id="l-month" style="font-weight:700"></div><div class="pbar"><i id="l-mbar"></i></div></div>
+  <div class="lcard" style="margin:0"><small style="color:var(--sub)">今年还剩</small><div id="l-year" style="font-weight:700"></div><div class="pbar"><i id="l-ybar" style="background:#F5A3C3"></i></div></div>
+ </div>
+ <div class="lcard" id="l-notes-c" style="padding:10px 16px"><small style="color:var(--sub)">记事</small> <b id="l-notes">🔒</b></div>
+ <div id="l-auth">
+  <p id="l-hint" style="color:var(--mintd);font-size:13px;margin-top:18px"></p>
+  <div class="unl"><input type="password" id="pw" placeholder="主密码" autocomplete="current-password"><button class="btn p" id="unlock">解锁</button></div>
+  <input type="password" id="pw2" class="hidden" placeholder="再次输入主密码" style="width:100%;margin-top:8px;background:#fff;border-radius:14px;padding:12px 14px">
+ </div>
+ <button class="btn w hidden" id="l-back" style="width:100%;margin-top:18px">返回 ›</button>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const TZ='Asia/Tokyo',VK='memo.vault',PK='memo.vault.prev',BK='memo.vault.bak',LP='memo.lockpreview';
+const PAL=['#AEEDE7','#FBD3E4','#E4DEFB','#FFE7B8','#CDEBFF','#D7F2C9','#FFD8CC','#E9ECEE'];
+const TXT=['#4E6478','#3FA9A0','#5B9BD5','#8C80C9','#C2577F','#D98A4E','#93A3B2'];
+const TIPS=[
+['睡眠','睡前一小时放下手机，让大脑慢慢进入休息模式。'],['睡眠','每天尽量在同一时间起床，周末也别相差超过一小时。'],['睡眠','卧室保持凉爽、昏暗、安静，更容易睡个好觉。'],['睡眠','午睡控制在 20 分钟以内，下午会更清醒。'],['睡眠','下午三点后少喝咖啡和浓茶，夜里更容易入睡。'],['睡眠','睡前写下明天的三件事，脑子就不用一直记着它们。'],
+['喝水','起床后先喝一杯温水，唤醒身体。'],['喝水','在桌上放一个水杯，看到就喝两口。'],['喝水','每天喝够 1.5–2 升水，尿液淡黄色就刚刚好。'],['喝水','用白开水或淡茶代替含糖饮料，一周就能感觉不同。'],['喝水','运动前后各补一杯水，别等口渴才喝。'],
+['姿势','每坐 45 分钟就站起来走一走、伸个懒腰。'],['姿势','屏幕顶部和眼睛齐平，脖子会轻松很多。'],['姿势','走路时收腹挺胸，肩膀放松向后。'],['姿势','久坐时双脚平放地面，别跷二郎腿。'],['姿势','低头看手机时把手机举高一点，保护颈椎。'],
+['护眼','20-20-20：每用眼 20 分钟，看 20 英尺（约 6 米）外 20 秒。'],['护眼','记得多眨眼，盯屏幕时眨眼次数会明显变少。'],['护眼','夜间把屏幕调暗、开启暖色模式。'],['护眼','在户外多待一会儿，自然光对眼睛很友好。'],['护眼','别在黑暗中看手机，开一盏小灯。'],
+['运动','今天走满 6000 步，饭后散步最轻松。'],['运动','能走楼梯就不坐电梯，少量多次也算运动。'],['运动','每天花 5 分钟拉伸，身体会越来越柔软。'],['运动','一周安排 2–3 次让自己微微出汗的运动。'],['运动','做 10 个深蹲，唤醒久坐的下半身。'],['运动','边听播客边散步，运动和充电两不误。'],
+['饮食','每餐先吃蔬菜，再吃肉和主食。'],['饮食','吃饭细嚼慢咽，一口嚼 15–20 下。'],['饮食','餐盘里放上三种以上颜色的食物。'],['饮食','晚饭七分饱，睡前三小时不再进食。'],['饮食','用坚果或水果代替薯片当零食。'],['饮食','尝试少盐少糖，给味蕾一点适应时间。'],['饮食','好好吃早餐，别让上午空着肚子工作。'],
+['心情','睡前写下今天值得感谢的三件小事。'],['心情','感到焦虑时，试试吸气 4 秒、屏息 4 秒、呼气 6 秒。'],['心情','给很久没联系的朋友发一句问候。'],['心情','今天对自己说一句“已经做得很好了”。'],['心情','留出 10 分钟什么也不做，只是发呆。'],['心情','听一首喜欢的歌，跟着哼两句。'],['心情','晒 15 分钟太阳，心情和维生素 D 一起提升。'],
+['整理','用完的东西随手放回原位，家里就不会乱。'],['整理','每天清理一个小角落，比如一个抽屉。'],['整理','睡前花 5 分钟整理桌面，明早心情更好。'],['整理','两分钟能做完的事，现在就做掉。'],['整理','定期清理手机相册和不用的 App。'],['整理','起床后顺手把被子叠好，开个好头。'],
+['理财','记下今天的每一笔开销，了解钱去了哪里。'],['理财','想买非必需品时，等 24 小时再决定。'],['理财','发工资后先存一部分，再安排花销。'],['理财','检查一下有没有忘记取消的自动订阅。'],['理财','准备一笔应急金，目标是 3–6 个月生活费。'],['理财','购物前列清单，按清单买，不被促销带跑。'],
+['学习','今天读 10 页书，积少成多。'],['学习','学到新东西时，试着用自己的话讲给别人听。'],['学习','把大任务拆成 25 分钟的小块，一次专注一块。'],['学习','工作时把手机放到看不见的地方。'],
+['生活','出门前检查：钥匙、手机、钱包、雨伞。'],['生活','开窗通风 10 分钟，让屋子换换新鲜空气。'],['生活','给房间添一盆绿植，看着就舒心。'],['生活','饭后刷牙或漱口，睡前记得用牙线。'],['生活','洗澡水别太烫，37–40℃ 对皮肤最友好。'],['生活','出门前涂防晒，阴天紫外线也不少。'],['生活','每周留一个晚上不看屏幕，和家人朋友聊聊天。']];
+let S=null,KEY=null,SALT=null,dirty=false,idleT=null,syncT=null,curView='home',fCat='',fTag='',editing=null,setupMode=false,screenOnly=false;
+const toast=(m,t=2200)=>{const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),t)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const parts=d=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,weekday:'short'}).formatToParts(d).map(p=>[p.type,p.value]));
+const todayKey=(d=new Date())=>{const p=parts(d);return `${p.year}-${p.month}-${p.day}`};
+const WK={Sun:'星期日',Mon:'星期一',Tue:'星期二',Wed:'星期三',Thu:'星期四',Fri:'星期五',Sat:'星期六'};
+const fmtT=ts=>{const p=parts(new Date(ts));return `${p.year}/${p.month}/${p.day} ${p.hour==='24'?'00':p.hour}:${p.minute}`};
+const greeting=()=>{const h=+parts(new Date()).hour%24;return h<5?'夜深了，早点休息':h<11?'早上好 ☀':h<14?'中午好':h<18?'下午好':'晚上好 ☾'};
+/* ---------- crypto ---------- */
+const b64=u=>{let s='';const a=new Uint8Array(u);for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function enc(obj,key=KEY,salt=SALT){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj)));return {v:1,app:'memo',salt:b64(salt),iv:b64(iv),ct:b64(ct),updatedAt:obj.updatedAt}}
+async function dec(blob,key){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(blob.iv)},key,ub64(blob.ct));return JSON.parse(new TextDecoder().decode(pt))}
+const fresh=()=>({notes:[],cats:[{id:'c1',name:'生活',color:'#AEEDE7'},{id:'c2',name:'工作',color:'#E4DEFB'},{id:'c3',name:'灵感',color:'#FBD3E4'}],tags:{},todos:[],fs:15,tipShift:{},gist:{token:'',id:''},updatedAt:Date.now()});
+function norm(o){const f=fresh();o=Object.assign(f,o||{});o.notes=Array.isArray(o.notes)?o.notes:[];o.todos=Array.isArray(o.todos)?o.todos:[];o.cats=Array.isArray(o.cats)?o.cats:f.cats;o.tags=o.tags&&typeof o.tags==='object'?o.tags:{};o.gist=o.gist||{token:'',id:''};return o}
+async function save(opts={}){if(!KEY||!S)return;if(!opts.keepTime)S.updatedAt=Date.now();
+ const blob=await enc(S);const str=JSON.stringify(blob);const old=localStorage.getItem(VK);
+ try{if(old)localStorage.setItem(PK,old);localStorage.setItem(VK,str);
+  const back=await dec(JSON.parse(localStorage.getItem(VK)),KEY);if(back.updatedAt!==S.updatedAt)throw new Error('verify');}
+ catch(e){if(old)localStorage.setItem(VK,old);toast('保存失败，已保留上一版本：'+e.message,4000);return false}
+ writePreview();if(!opts.noSync)scheduleSync();return true}
+function writePreview(){if(S&&S.lockPreview){const t=todayTodos();localStorage.setItem(LP,JSON.stringify({d:todayKey(),n:S.notes.length,t:t.slice(0,5).map(x=>({x:x.text,d:x.done,tm:x.time})),done:t.filter(x=>x.done).length,all:t.length}))}else localStorage.removeItem(LP)}
+async function tryLoad(pw){const raw=localStorage.getItem(VK);const cands=[raw,localStorage.getItem(PK)].filter(Boolean);
+ for(const r of cands){try{const b=JSON.parse(r);const salt=ub64(b.salt);const k=await derive(pw,salt);const o=await dec(b,k);KEY=k;SALT=salt;S=norm(o);if(r!==raw){toast('主数据损坏，已从上一版本恢复');await save({keepTime:true,noSync:true})}return true}catch(e){}}
+ return false}
+/* ---------- lock ---------- */
+function lockUI(){const has=!!localStorage.getItem(VK);setupMode=!has;$('#pw2').classList.toggle('hidden',has);
+ $('#l-hint').textContent=has?'输入主密码解锁':'首次使用：设置主密码（至少 6 位，忘记无法找回）';$('#unlock').textContent=has?'解锁':'创建';
+ $('#pw').autocomplete=has?'current-password':'new-password'}
+function lock(){if(S&&dirty){}KEY=null;S=null;editing=null;closeSheets();screenOnly=false;$('#l-auth').classList.remove('hidden');$('#l-back').classList.add('hidden');$('#lock').classList.remove('out');$('#pw').value='';lockUI();renderLock();}
+async function unlock(){const pw=$('#pw').value;const btn=$('#unlock');if(!pw)return;
+ btn.disabled=true;btn.textContent='…';
+ try{if(setupMode){if(pw.length<6){toast('密码至少 6 位');return}if(pw!==$('#pw2').value){toast('两次输入不一致');return}
+   SALT=crypto.getRandomValues(new Uint8Array(16));KEY=await derive(pw,SALT);S=fresh();
+   S.notes.push({id:uid(),title:'欢迎使用口袋备忘录 ✦',html:'这里是你的私人小口袋。<br><span style="color:#3FA9A0">选中文字</span>可以改<span style="font-size:20px">大小</span>和<span style="color:#C2577F">颜色</span>。',cat:'c1',tags:[],created:Date.now(),updated:Date.now()});
+   await save({noSync:true});}
+  else if(!await tryLoad(pw)){toast('密码不正确');$('#pw').select();return}
+  $('#pw').value='';$('#pw2').value='';applyFs();rollTodos();$('#lock').classList.add('out');bump();renderAll();
+  if(S.gist.token)pullIfNewer(pw).catch(e=>setSync('同步失败：'+e.message));
+ }finally{btn.disabled=false;lockUI()}}
+function bump(){clearTimeout(idleT);if(KEY)idleT=setTimeout(lock,10*60*1000)}
+['pointerdown','keydown','scroll','touchstart'].forEach(e=>addEventListener(e,bump,{passive:true,capture:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){window._hid=Date.now()}else if(window._hid&&Date.now()-window._hid>10*60*1000&&KEY)lock()});
+/* ---------- date helpers ---------- */
+function todayTodos(){const t=todayKey();return S.todos.filter(x=>x.date===t||(x.date<t&&!x.done)).sort((a,b)=>(a.done-b.done)||((a.time||'99')<(b.time||'99')?-1:1))}
+function rollTodos(){} // overdue unfinished items remain visible with a 逾期 badge
+function tipFor(){const d=todayKey();let h=0;for(const c of d)h=(h*31+c.charCodeAt(0))>>>0;const sh=(S&&S.tipShift[d])||0;return TIPS[(h+sh*7)%TIPS.length]}
+function renderLock(){const n=new Date(),p=parts(n);$('#l-clock').textContent=`${p.hour==='24'?'00':p.hour}:${p.minute}`;
+ $('#l-date').textContent=`${+p.month}月${+p.day}日 ${WK[p.weekday]}`;$('#l-greet').textContent=greeting();
+ const tp=tipFor();$('#l-tip').textContent=tp[1];
+ const y=+p.year,m=+p.month,d=+p.day,dim=new Date(y,m,0).getDate();const doy=Math.floor((Date.UTC(y,m-1,d)-Date.UTC(y,0,1))/864e5)+1;const diy=(y%4===0&&y%100!==0)||y%400===0?366:365;
+ $('#l-month').textContent=`${d}/${dim} 天 · ${Math.round(d/dim*100)}%`;$('#l-mbar').style.width=d/dim*100+'%';
+ $('#l-year').textContent=`${diy-doy} 天`;$('#l-ybar').style.width=doy/diy*100+'%';
+ let list=null,done=0,all=0,nn='🔒';
+ if(S){const t=todayTodos();list=t.slice(0,5).map(x=>({x:x.text,d:x.done,tm:x.time}));done=t.filter(x=>x.done).length;all=t.length;nn=S.notes.length+' 篇'}
+ else{try{const pv=JSON.parse(localStorage.getItem(LP)||'null');if(pv&&pv.d===todayKey()){list=pv.t;done=pv.done;all=pv.all;nn=pv.n+' 篇'}}catch(e){}}
+ $('#l-notes').textContent=nn;
+ $('#l-todos').innerHTML=list==null?'<span style="color:var(--sub)">🔒 解锁后查看</span>':list.length?list.map(x=>`<div style="${x.d?'color:#93A3B2;text-decoration:line-through':''}">${x.tm?`<span class="tm" style="font-size:11px">${esc(x.tm)}</span> `:'· '}${esc(x.x)}</div>`).join(''):'<span style="color:var(--sub)">今天没有待办，轻松一下 ☁</span>';
+ const pct=all?done/all:0;$('#l-ring').style.strokeDashoffset=169.6*(1-pct);$('#l-pct').textContent=list==null?'–':all?Math.round(pct*100)+'%':'✓';}
+setInterval(()=>{if(!$('#lock').classList.contains('out'))renderLock();else if(KEY&&curView==='home'){$('#h-greet').textContent=greeting()}},1000);
+/* ---------- sanitizer ---------- */
+const OK_TAG={B:'b',STRONG:'b',I:'i',EM:'i',U:'u',BR:'br',DIV:'div',P:'div',SPAN:'span',FONT:'span'};
+const okColor=c=>/^#[0-9a-f]{3,8}$/i.test(c)||/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*[\d.]+\s*)?\)$/i.test(c);
+const FSZ={1:'12px',2:'13px',3:'15px',4:'16px',5:'20px',6:'26px',7:'30px'};
+function clean(html){const doc=new DOMParser().parseFromString('<body>'+String(html||'')+'</body>','text/html');const out=document.createElement('div');
+ (function walk(src,dst){for(const n of src.childNodes){if(n.nodeType===3){dst.appendChild(document.createTextNode(n.nodeValue));continue}if(n.nodeType!==1)continue;
+  if(/^(SCRIPT|STYLE|TEMPLATE|IFRAME|OBJECT|SVG|MATH|NOSCRIPT|TITLE|TEXTAREA)$/i.test(n.tagName))continue;const t=OK_TAG[n.tagName];if(!t){walk(n,dst);continue}const e=document.createElement(t);
+  if(t==='span'){let col=n.style?n.style.color:'',sz=n.style?n.style.fontSize:'';if(n.tagName==='FONT'){col=n.getAttribute('color')||col;sz=FSZ[n.getAttribute('size')]||sz}
+   if(col&&okColor(col.trim()))e.style.color=col.trim();if(sz&&/^\d{1,2}(\.\d+)?px$/.test(sz.trim())&&parseFloat(sz)>=10&&parseFloat(sz)<=40)e.style.fontSize=sz.trim();
+   const fw=n.style&&n.style.fontWeight;if(fw==='bold'||+fw>=600)e.style.fontWeight='700';if(n.style&&n.style.fontStyle==='italic')e.style.fontStyle='italic'}
+  if(t!=='br')walk(n,e);dst.appendChild(e)}})(doc.body,out);return out.innerHTML}
+const plain=h=>{const d=new DOMParser().parseFromString('<body>'+clean(h).replace(/<br>|<\/div>/g,' ')+'</body>','text/html');return d.body.textContent||''};
+/* ---------- render ---------- */
+const catOf=id=>S.cats.find(c=>c.id===id);
+const tagColor=t=>S.tags[t]||'#E9ECEE';
+function noteCard(n,i){const c=catOf(n.cat);return `<div class="note" data-id="${n.id}" style="animation-delay:${Math.min(i,8)*.04}s"><i class="bar" style="background:${c?c.color:'#E9ECEE'}"></i><h3>${esc(n.title||'无标题')}</h3><div class="ex">${esc(plain(n.html).slice(0,120))||'<span style="color:#C3CDD5">（空白）</span>'}</div><div class="meta">${c?`<span class="tag" style="background:${c.color}">${esc(c.name)}</span>`:''}${n.tags.map(t=>`<span class="tag" style="background:${tagColor(t)}">#${esc(t)}</span>`).join('')}<span style="margin-left:auto">改 ${fmtT(n.updated)}</span></div></div>`}
+function renderHome(){const p=parts(new Date());$('#h-greet').textContent=greeting();$('#h-date').textContent=`${+p.month}月${+p.day}日 ${WK[p.weekday]}`;
+ $('#s-notes').textContent=S.notes.length;const t=todayTodos();$('#s-todo').textContent=`${t.filter(x=>x.done).length}/${t.length}`;
+ $('#h-todos').innerHTML=t.length?t.slice(0,4).map(todoRow).join(''):'<div class="empty" style="padding:12px 0">今天还没有提醒，<button data-go="todo" style="color:var(--mintd)">去添加 ›</button></div>';
+ const tp=tipFor();$('#tip-cat').textContent=tp[0];$('#tip-q').textContent=tp[1];
+ const ns=[...S.notes].sort((a,b)=>b.updated-a.updated).slice(0,3);$('#h-notes').innerHTML=ns.length?ns.map(noteCard).join(''):'<div class="ph">还没有记事 · 点右下角 + 新建</div>'}
+function renderNotes(){const q=$('#q').value.trim().toLowerCase();
+ $('#cat-chips').innerHTML=`<button class="chip ${!fCat?'on':''}" data-cat="">全部 ${S.notes.length}</button>`+S.cats.map(c=>`<button class="chip ${fCat===c.id?'on':''}" data-cat="${c.id}" style="${fCat===c.id?'':`background:${c.color}`}">${esc(c.name)}</button>`).join('');
+ const tags=Object.keys(S.tags).filter(t=>S.notes.some(n=>n.tags.includes(t)));
+ $('#tag-chips').innerHTML=tags.map(t=>`<button class="chip ${fTag===t?'on':''}" data-tag="${esc(t)}">#${esc(t)}</button>`).join('');
+ const ns=S.notes.filter(n=>(!fCat||n.cat===fCat)&&(!fTag||n.tags.includes(fTag))&&(!q||(n.title+' '+plain(n.html)+' '+n.tags.join(' ')).toLowerCase().includes(q))).sort((a,b)=>b.updated-a.updated);
+ $('#n-list').innerHTML=ns.length?ns.map(noteCard).join(''):'<div class="empty">没有找到记事</div>'}
+function todoRow(x){const od=x.date<todayKey()&&!x.done;return `<div class="todo ${x.done?'done':''}" data-tid="${x.id}"><button class="ck" data-act="tg">${x.done?'✓':''}</button><span class="tx">${esc(x.text)}</span>${od?'<span class="od">逾期</span>':''}${x.time?`<span class="tm">${esc(x.time)}</span>`:''}<button class="x" data-act="rm">×</button></div>`}
+function renderTodo(){const p=parts(new Date());$('#t-date').textContent=`${p.year}年${+p.month}月${+p.day}日 ${WK[p.weekday]}`;const t=todayTodos();
+ $('#t-prog').textContent=t.length?`已完成 ${t.filter(x=>x.done).length}/${t.length}`:'';$('#t-list').innerHTML=t.length?t.map(todoRow).join(''):'<div class="empty">今天还没有待办 ✦</div>'}
+function renderSet(){$('#fs').value=S.fs;$('#fs-v').textContent=S.fs+'px';$('#lockprev').checked=!!S.lockPreview;
+ $('#cat-set').innerHTML=S.cats.map(c=>`<div class="it"><button class="sw" style="background:${c.color}" data-cc="${c.id}"></button><span>${esc(c.name)}</span><button class="btn s g" data-cr="${c.id}">改名</button><button class="btn s d" data-cd="${c.id}">删除</button></div>`).join('')+`<div class="it"><input class="inp" id="cat-new" placeholder="新分类名称" maxlength="12"><button class="btn s" id="cat-add">添加</button></div>`;
+ const tg=Object.keys(S.tags);$('#tag-set').innerHTML=tg.length?tg.map(t=>`<div class="it"><button class="sw" style="background:${tagColor(t)}" data-tc="${esc(t)}"></button><span>#${esc(t)}</span><button class="btn s d" data-td="${esc(t)}">删除</button></div>`).join(''):'<div class="it"><span style="color:var(--sub)">在记事里添加标签后可在这里改色</span></div>';
+ $('#tok').value='';$('#tok').placeholder=S.gist.token?'已保存 Token（••••'+S.gist.token.slice(-4)+'）':'粘贴 GitHub Token（仅 gist 权限）';
+ if(!$('#sync-st').dataset.set)setSync(S.gist.token?(S.gist.id?'已连接 Gist '+S.gist.id.slice(0,7):'已保存 Token，尚未上传'):'未设置')}
+function renderAll(){if(!S)return;renderHome();renderNotes();renderTodo();renderSet()}
+function applyFs(){document.documentElement.style.setProperty('--fs',(S?S.fs:15)+'px')}
+/* ---------- nav ---------- */
+const ORDER=['home','notes','todo','set'];
+function go(v){if(v===curView)return;const a=ORDER.indexOf(curView),b=ORDER.indexOf(v);const from=$('#v-'+curView),to=$('#v-'+v);
+ to.classList.remove('left');to.style.transition='none';to.style.transform=`translateX(${b>a?24:-24}px)`;to.offsetWidth;to.style.transition='';to.style.transform='';
+ from.classList.remove('on');from.classList.toggle('left',b>a);to.classList.add('on');to.scrollTop=0;curView=v;
+ $$('#tabs button').forEach(x=>x.classList.toggle('on',x.dataset.go===v));$('#fab').classList.toggle('hidden',v==='set'||v==='todo');
+ to.querySelectorAll('.card,.note').forEach(e=>{e.style.animation='none';e.offsetWidth;e.style.animation=''});renderAll()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+ const n=e.target.closest('.note');if(n){openEditor(n.dataset.id);return}
+ const t=e.target.closest('[data-tid]');if(t&&e.target.closest('[data-act]')){const x=S.todos.find(y=>y.id===t.dataset.tid);if(!x)return;
+  if(e.target.closest('[data-act]').dataset.act==='tg'){x.done=!x.done;if(x.done&&x.date<todayKey())x.date=todayKey()}else S.todos=S.todos.filter(y=>y!==x);save();renderAll()}});
+/* ---------- editor ---------- */
+function openSheet(id){$('#mask').classList.add('on');$(id).classList.add('on')}
+function closeSheets(){$('#mask').classList.remove('on');$$('.sheet').forEach(s=>s.classList.remove('on'))}
+function openEditor(id){let n=S.notes.find(x=>x.id===id);if(!n){n={id:uid(),title:'',html:'',cat:fCat||'',tags:[],created:Date.now(),updated:Date.now(),_new:true}}
+ editing=JSON.parse(JSON.stringify(n));$('#ed-title').value=editing.title;$('#ed').innerHTML=clean(editing.html);renderEdMeta();openSheet('#ed-sheet');if(n._new)setTimeout(()=>$('#ed-title').focus(),350)}
+function renderEdMeta(){const e=editing;$('#ed-meta').innerHTML=`<span>记入 ${fmtT(e.created)}</span><span>· 更改 ${fmtT(e.updated)}</span>`;
+ $('#ed-cats').innerHTML=`<button class="chip ${!e.cat?'on':''}" data-ec="">未分类</button>`+S.cats.map(c=>`<button class="chip ${e.cat===c.id?'on':''}" data-ec="${c.id}" style="${e.cat===c.id?'':`background:${c.color}`}">${esc(c.name)}</button>`).join('');
+ $('#ed-tags').innerHTML=e.tags.map(t=>`<span class="tag" style="background:${tagColor(t)};font-size:13px;padding:3px 10px">#${esc(t)} <button data-etr="${esc(t)}" style="color:#93A3B2">×</button></span>`).join('')||'<span style="font-size:12px;color:var(--sub)">暂无标签</span>'}
+async function commitEditor(){if(!editing)return;const e=editing;const html=clean($('#ed').innerHTML);const title=$('#ed-title').value.trim();
+ const orig=S.notes.find(x=>x.id===e.id);if(!orig&&!title&&!plain(html).trim()){editing=null;return}
+ const changed=!orig||orig.title!==title||orig.html!==html||orig.cat!==e.cat||orig.tags.join('\u0001')!==e.tags.join('\u0001');
+ if(changed){const n={id:e.id,title,html,cat:e.cat,tags:e.tags,created:e.created,updated:Date.now()};if(orig)Object.assign(orig,n);else S.notes.push(n);await save()}
+ editing=null;renderAll()}
+$('#ed-close').onclick=async()=>{await commitEditor();closeSheets()};
+$('#mask').onclick=async()=>{if(editing)await commitEditor();closeSheets()};
+$('#ed-del').onclick=()=>confirmDlg('删除这篇记事？此操作无法撤销。',async()=>{S.notes=S.notes.filter(x=>x.id!==editing.id);editing=null;await save();closeSheets();renderAll();toast('已删除')});
+$('#fab').onclick=()=>openEditor(null);
+$('#ed-colors').innerHTML=TXT.map(c=>`<button class="sw" data-col="${c}" style="background:${c};min-width:0;padding:0;height:24px;border-radius:50%"></button>`).join('');
+let savedRange=null;document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&$('#ed').contains(s.anchorNode))savedRange=s.getRangeAt(0).cloneRange()});
+function restoreSel(){const ed=$('#ed');ed.focus();if(savedRange){const s=getSelection();s.removeAllRanges();s.addRange(savedRange)}}
+function wrapStyle(prop,val){restoreSel();const s=getSelection();if(!s.rangeCount)return;const r=s.getRangeAt(0);if(r.collapsed){toast('先选中要修改的文字');return}
+ const sp=document.createElement('span');sp.style[prop]=val;sp.appendChild(r.extractContents());
+ sp.querySelectorAll('span').forEach(x=>{x.style[prop]=''});r.insertNode(sp);s.removeAllRanges();const nr=document.createRange();nr.selectNodeContents(sp);s.addRange(nr);savedRange=nr.cloneRange()}
+$('#ed-tool').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});
+$('#ed-tool').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.sz)wrapStyle('fontSize',b.dataset.sz+'px');else if(b.dataset.col)wrapStyle('color',b.dataset.col);else if(b.dataset.cmd){restoreSel();document.execCommand(b.dataset.cmd)}};
+$('#ed').addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)});
+$('#ed-sheet').addEventListener('click',e=>{const c=e.target.closest('[data-ec]');if(c){editing.cat=c.dataset.ec;renderEdMeta();return}const r=e.target.closest('[data-etr]');if(r){editing.tags=editing.tags.filter(t=>t!==r.dataset.etr);renderEdMeta()}});
+function addTag(){const v=$('#ed-tag-in').value.trim().replace(/^#/,'');if(!v)return;if(!editing.tags.includes(v))editing.tags.push(v);if(!S.tags[v])S.tags[v]=PAL[Object.keys(S.tags).length%PAL.length];$('#ed-tag-in').value='';renderEdMeta()}
+$('#ed-tag-add').onclick=addTag;$('#ed-tag-in').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTag()}};
+/* ---------- dialogs ---------- */
+function dlg(html,bind){$('#dlg-b').innerHTML=html;openSheet('#dlg');bind&&bind($('#dlg-b'))}
+function confirmDlg(msg,ok){dlg(`<p style="margin:8px 0 16px">${esc(msg)}</p><div class="row"><button class="btn g" style="flex:1" id="dn">取消</button><button class="btn p" style="flex:1" id="dy">确定</button></div>`,b=>{b.querySelector('#dn').onclick=()=>{$('#dlg').classList.remove('on');if(!editing)closeSheets()};b.querySelector('#dy').onclick=()=>{$('#dlg').classList.remove('on');if(!editing)closeSheets();ok()}})}
+function promptDlg(msg,val,ok,type='text'){dlg(`<p style="margin:8px 0 10px">${esc(msg)}</p><input class="inp" id="dv" type="${type}" maxlength="64"><div class="row" style="margin-top:12px"><button class="btn g" style="flex:1" id="dn">取消</button><button class="btn" style="flex:1" id="dy">确定</button></div>`,b=>{const i=b.querySelector('#dv');i.value=val||'';setTimeout(()=>i.focus(),300);b.querySelector('#dn').onclick=closeSheets;b.querySelector('#dy').onclick=()=>{closeSheets();ok(i.value)}})}
+function colorDlg(cur,ok){dlg(`<p style="margin:8px 0 12px">选择颜色</p><div class="row" style="flex-wrap:wrap;gap:12px">${PAL.map(c=>`<button class="sw ${c===cur?'on':''}" data-p="${c}" style="background:${c};width:36px;height:36px"></button>`).join('')}</div>`,b=>b.onclick=e=>{const p=e.target.closest('[data-p]');if(p){closeSheets();ok(p.dataset.p)}})}
+/* ---------- todo / tip / settings ---------- */
+function addTodo(){const v=$('#t-in').value.trim();if(!v)return;S.todos.push({id:uid(),text:v,time:$('#t-time').value||'',done:false,date:todayKey(),created:Date.now()});$('#t-in').value='';$('#t-time').value='';
+ const cut=todayKey(new Date(Date.now()-60*864e5));S.todos=S.todos.filter(x=>!(x.done&&x.date<cut));save();renderAll()}
+$('#t-add').onclick=addTodo;$('#t-in').onkeydown=e=>{if(e.key==='Enter')addTodo()};
+$('#tip-next').onclick=()=>{const d=todayKey();S.tipShift={[d]:((S.tipShift[d]||0)+1)};save();const q=$('#tip-q');q.style.opacity=0;setTimeout(()=>{renderHome();q.style.transition='opacity .3s';q.style.opacity=1},150)};
+$('#q').oninput=renderNotes;
+$('#cat-chips').onclick=e=>{const c=e.target.closest('[data-cat]');if(c){fCat=c.dataset.cat;renderNotes()}};
+$('#tag-chips').onclick=e=>{const c=e.target.closest('[data-tag]');if(c){fTag=fTag===c.dataset.tag?'':c.dataset.tag;renderNotes()}};
+$('#fs').oninput=e=>{S.fs=+e.target.value;applyFs();$('#fs-v').textContent=S.fs+'px'};$('#fs').onchange=()=>save();
+$('#lockprev').onchange=e=>{S.lockPreview=e.target.checked;save()};
+$('#v-set').addEventListener('click',e=>{const d=e.target.closest('[data-cc],[data-cr],[data-cd],[data-tc],[data-td],#cat-add');if(!d)return;
+ if(d.id==='cat-add'){const v=$('#cat-new').value.trim();if(!v)return;S.cats.push({id:uid(),name:v,color:PAL[S.cats.length%PAL.length]});save();renderAll();return}
+ if(d.dataset.cc){const c=catOf(d.dataset.cc);colorDlg(c.color,v=>{c.color=v;save();renderAll()})}
+ if(d.dataset.cr){const c=catOf(d.dataset.cr);promptDlg('分类新名称',c.name,v=>{v=v.trim();if(v){c.name=v.slice(0,12);save();renderAll()}})}
+ if(d.dataset.cd){const c=catOf(d.dataset.cd);confirmDlg(`删除分类「${c.name}」？其中的记事会变为未分类。`,()=>{S.cats=S.cats.filter(x=>x!==c);S.notes.forEach(n=>{if(n.cat===c.id)n.cat=''});if(fCat===c.id)fCat='';save();renderAll()})}
+ if(d.dataset.tc){const t=d.dataset.tc;colorDlg(tagColor(t),v=>{S.tags[t]=v;save();renderAll()})}
+ if(d.dataset.td){const t=d.dataset.td;confirmDlg(`删除标签 #${t}？会从所有记事中移除。`,()=>{delete S.tags[t];S.notes.forEach(n=>n.tags=n.tags.filter(x=>x!==t));if(fTag===t)fTag='';save();renderAll()})}});
+$('#lock-now').onclick=lock;
+$('#b-screen').onclick=()=>{screenOnly=true;renderLock();$('#l-auth').classList.add('hidden');$('#l-back').classList.remove('hidden');$('#lock').classList.remove('out')};
+$('#l-back').onclick=()=>{$('#lock').classList.add('out');screenOnly=false;$('#l-auth').classList.remove('hidden');$('#l-back').classList.add('hidden')};
+$('#unlock').onclick=unlock;$('#pw').onkeydown=e=>{if(e.key==='Enter'&&setupMode&&$('#pw2').value==='')$('#pw2').focus();else if(e.key==='Enter')unlock()};$('#pw2').onkeydown=e=>{if(e.key==='Enter')unlock()};
+$('#chpw').onclick=()=>promptDlg('输入新的主密码（至少 6 位）','',async v=>{if(v.length<6){toast('至少 6 位');return}SALT=crypto.getRandomValues(new Uint8Array(16));KEY=await derive(v,SALT);await save();toast('主密码已更新，请牢记')},'password');
+/* ---------- export / import ---------- */
+$('#exp').onclick=async()=>{const blob=await enc(S);const name=`memo-backup-${todayKey()}.enc`;const file=new File([JSON.stringify(blob)],name,{type:'application/json'});
+ try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'口袋备忘录加密备份'});toast('已分享，可选择存到 Google Drive');return}}catch(e){if(e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('已下载加密备份')};
+$('#imp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const b=JSON.parse(await f.text());await adoptBlob(b,'导入');}catch(err){toast('导入失败：'+err.message)}};
+async function decAny(b,pw){try{return await dec(b,KEY)}catch(e){}if(!pw)pw=await new Promise(r=>promptDlg('该备份使用了不同的密码，请输入它的主密码','',r,'password'));const k=await derive(pw,ub64(b.salt));return await dec(b,k)}
+async function adoptBlob(b,label,pw){if(!b||!b.iv||!b.ct)throw new Error('格式不对');const o=await decAny(b,pw);
+ const cur=localStorage.getItem(VK);if(cur)localStorage.setItem(BK,cur);S=norm(Object.assign(o,{gist:o.gist&&o.gist.token?o.gist:S.gist}));applyFs();await save({keepTime:true,noSync:true});renderAll();toast(label+'成功（原数据已另存备份）')}
+/* ---------- gist sync ---------- */
+const GH='https://api.github.com',GF='memo-vault.enc';
+function setSync(m){$('#sync-st').textContent=m}
+async function gh(path,opt={}){const r=await fetch(GH+path,Object.assign({},opt,{headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+S.gist.token,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},cache:'no-store'}));
+ if(r.status===401)throw new Error('Token 无效或已过期');if(r.status===403)throw new Error('权限不足或频率受限');if(r.status===404)throw Object.assign(new Error('找不到云端 Gist'),{nf:1});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function findGist(){if(S.gist.id)return S.gist.id;const l=await gh('/gists?per_page=100');const g=l.find(x=>x.files&&x.files[GF]);if(g){S.gist.id=g.id;await save({keepTime:true,noSync:true})}return S.gist.id}
+async function remoteBlob(){const id=await findGist();if(!id)return null;const g=await gh('/gists/'+id);const f=g.files&&g.files[GF];if(!f)return null;let c=f.content;
+ if(f.truncated){const r=await fetch(f.raw_url,{cache:'no-store'});if(!r.ok)throw new Error('读取云端失败');c=await r.text()}return JSON.parse(c)}
+async function upload(force){if(!S.gist.token)throw new Error('请先保存 Token');setSync('上传中…');
+ if(!force){const rb=await remoteBlob().catch(e=>{if(e.nf){S.gist.id='';return null}throw e});if(rb&&rb.updatedAt>S.updatedAt&&rb.updatedAt!==S.gist.last){setSync('云端有更新的版本，已暂停自动上传，请先「从云端恢复」');return false}}
+ const body=JSON.stringify(await enc(S));const files={[GF]:{content:body}};let g;
+ if(S.gist.id){try{g=await gh('/gists/'+S.gist.id,{method:'PATCH',body:JSON.stringify({files})})}catch(e){if(!e.nf)throw e;S.gist.id=''}}
+ if(!S.gist.id){g=await gh('/gists',{method:'POST',body:JSON.stringify({description:'Pocket Memo encrypted vault',public:false,files})});S.gist.id=g.id}
+ S.gist.last=S.updatedAt;await save({keepTime:true,noSync:true});setSync('已同步 '+fmtT(Date.now()));return true}
+async function pullIfNewer(pw){setSync('检查云端…');const rb=await remoteBlob();if(!rb){setSync('云端暂无数据');return}
+ if(rb.updatedAt>S.updatedAt){await adoptBlob(rb,'已从云端拉取较新的数据',pw);S.gist.last=S.updatedAt;await save({keepTime:true,noSync:true})}setSync('已同步 '+fmtT(Date.now()))}
+function scheduleSync(){if(!S||!S.gist.token)return;clearTimeout(syncT);syncT=setTimeout(()=>upload(false).catch(e=>setSync('自动同步失败：'+e.message)),4000)}
+$('#tok-save').onclick=async()=>{const v=$('#tok').value.trim();if(!/^(gh[pousr]_|github_pat_)[A-Za-z0-9_]{20,}$/.test(v)){toast('Token 格式看起来不对');return}S.gist.token=v;S.gist.id='';await save({noSync:true});renderSet();toast('Token 已加密保存');upload(false).catch(e=>setSync('上传失败：'+e.message))};
+$('#tok-del').onclick=()=>confirmDlg('清除本机保存的 Token？云端数据不会被删除。',async()=>{S.gist={token:'',id:''};await save({noSync:true});renderSet();setSync('未设置')});
+$('#up').onclick=()=>upload(true).then(ok=>ok&&toast('已上传加密数据')).catch(e=>{setSync('上传失败：'+e.message);toast(e.message)});
+$('#down').onclick=()=>{if(!S.gist.token){toast('请先保存 Token');return}confirmDlg('用云端数据覆盖本机？本机当前数据会先另存一份备份。',async()=>{try{setSync('下载中…');const rb=await remoteBlob();if(!rb)throw new Error('云端暂无数据');await adoptBlob(rb,'云端恢复');S.gist.last=S.updatedAt;await save({keepTime:true,noSync:true});setSync('已同步 '+fmtT(Date.now()))}catch(e){setSync('恢复失败：'+e.message);toast(e.message)}})};
+/* ---------- boot ---------- */
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+lockUI();renderLock();
+</script></body></html>
