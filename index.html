@@ -111,6 +111,34 @@ button{cursor:pointer}
 .ph{background:var(--gray);border-radius:12px;height:70px;display:grid;place-items:center;color:#B7C2CB;font-size:12px}
 .guide{font-size:13px;color:var(--sub);line-height:1.8}
 .guide b{color:var(--text)}
+@media (min-width:600px) and (max-width:899px){.sec,.search,.chips{max-width:680px;margin-left:auto;margin-right:auto}.search{margin-top:14px}.head .in{max-width:680px;margin:0 auto}.tabs{max-width:520px;margin:0 auto}.sheet{max-width:720px;margin:0 auto}.lock .in{max-width:620px;margin:0 auto}}
+@media (min-width:900px){
+.views{margin-left:220px}
+.tabs{left:16px;top:16px;bottom:16px;right:auto;width:188px;flex-direction:column;justify-content:flex-start;gap:6px;padding:20px 12px;border-radius:24px;box-shadow:none}
+.tabs:before{content:'口袋备忘录';font:20px/1.3 QLatin,QCJK,sans-serif;color:var(--mintd);padding:6px 10px 18px;display:block}
+.tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;font-size:15px}
+.tabs button i{font-size:18px;width:20px;text-align:center}
+.fab{right:40px;bottom:40px}
+.head .in,.sec,.search,.chips{max-width:1080px;margin-left:auto;margin-right:auto}
+.search{margin-top:18px}.head .in{padding:22px 28px 30px}.sec{padding-left:28px;padding-right:28px}.chips{padding-left:28px;padding-right:28px}
+.view{padding-bottom:60px}
+#v-home{display:grid;grid-template-columns:1fr minmax(0,540px) minmax(0,540px) 1fr;align-content:start}#v-home>.sec:nth-child(3){grid-column:2}#v-home>.sec:nth-child(4){grid-column:3}
+#v-home>.head,#v-home>.sec:nth-child(2),#v-home>.sec:nth-child(5){grid-column:1/-1;width:100%;max-width:1080px;justify-self:center}
+#v-home>.head{max-width:none!important;justify-self:stretch!important;width:auto!important}#v-home>.sec{width:100%}
+#v-home>.sec:nth-child(3){padding-right:9px}#v-home>.sec:nth-child(4){padding-left:9px}
+#v-home .tip{min-height:calc(100% - 36px)}
+#h-notes,#n-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+#h-notes .note,#n-list .note{margin:0}#n-list .empty{grid-column:1/-1}
+#v-todo .sec,#v-set .sec{max-width:760px}
+.sheet{left:50%;right:auto;width:760px;margin-left:-380px;top:5vh;bottom:5vh;border-radius:24px;transform:translateY(110vh)}
+.sheet .grab{display:none}
+.sheet.small{width:460px;margin-left:-230px;top:auto;bottom:auto;top:30vh;transform:translateY(80vh)}
+.sheet.on{transform:none}
+.lock .in{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;column-gap:48px;padding:40px;align-items:start;min-height:calc(100vh - 22px);align-content:center}
+.lc-left{grid-column:1;grid-row:1}#l-auth{grid-column:1;grid-row:2}#l-backw{grid-column:1;grid-row:2}
+.lc-right{grid-column:2;grid-row:1/span 2}.lc-right>.lcard:first-child{margin-top:0}
+.clock{font-size:132px!important}.greet{margin-top:40px;font-size:18px}.date{font-size:20px}
+}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 @font-face{font-family:QLatin;src:url(q-latin.woff2) format('woff2');font-display:swap;unicode-range:U+0020-007E,U+00B7}
 @font-face{font-family:QCJK;src:url(q-cjk.woff2) format('woff2');font-display:swap}
@@ -211,9 +239,9 @@ button{cursor:pointer}
 <!-- lock -->
 <div class="lock" id="lock"><div class="stripe"></div><div class="in">
  <span class="spark" style="right:34px;top:40px;font-size:20px">✦</span><span class="spark" style="left:60%;top:120px;font-size:12px">✦</span><span class="spark" style="right:20px;top:170px;font-size:10px">○</span>
- <div class="greet" id="l-greet"></div>
+ <div class="lc-left"><div class="greet" id="l-greet"></div>
  <div class="clock" id="l-clock">--:--</div>
- <div class="date" id="l-date"></div>
+ <div class="date" id="l-date"></div></div><div class="lc-right">
  <div class="lcard"><div class="tape l"></div><div class="row" style="gap:14px">
   <svg class="ring" viewBox="0 0 66 66"><circle cx="33" cy="33" r="27" fill="none" stroke="#EAF3F2" stroke-width="8"/><circle id="l-ring" cx="33" cy="33" r="27" fill="none" stroke="#7ADFD5" stroke-width="8" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6" transform="rotate(-90 33 33)" style="transition:stroke-dashoffset .8s var(--ease)"/><text id="l-pct" x="33" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#4E6478">–</text></svg>
   <div style="flex:1"><b style="font-size:14px">今日待办</b><div id="l-todos" style="font-size:13px;margin-top:4px"></div></div></div></div>
@@ -223,12 +251,12 @@ button{cursor:pointer}
   <div class="lcard" style="margin:0"><small style="color:var(--sub)">今年还剩</small><div id="l-year" style="font-weight:700"></div><div class="pbar"><i id="l-ybar" style="background:#F5A3C3"></i></div></div>
  </div>
  <div class="lcard" id="l-notes-c" style="padding:10px 16px"><small style="color:var(--sub)">记事</small> <b id="l-notes">🔒</b></div>
- <div id="l-auth">
+ </div><div id="l-auth">
   <p id="l-hint" style="color:var(--mintd);font-size:13px;margin-top:18px"></p>
   <div class="unl"><input type="password" id="pw" placeholder="主密码" autocomplete="current-password"><button class="btn p" id="unlock">解锁</button></div>
   <input type="password" id="pw2" class="hidden" placeholder="再次输入主密码" style="width:100%;margin-top:8px;background:#fff;border-radius:14px;padding:12px 14px">
  </div>
- <button class="btn w hidden" id="l-back" style="width:100%;margin-top:18px">返回 ›</button>
+ <div id="l-backw"><button class="btn w hidden" id="l-back" style="width:100%;margin-top:18px">返回 ›</button></div>
 </div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -433,6 +461,8 @@ $('#tok-save').onclick=async()=>{const v=$('#tok').value.trim();if(!/^(gh[pousr]
 $('#tok-del').onclick=()=>confirmDlg('清除本机保存的 Token？云端数据不会被删除。',async()=>{S.gist={token:'',id:''};await save({noSync:true});renderSet();setSync('未设置')});
 $('#up').onclick=()=>upload(true).then(ok=>ok&&toast('已上传加密数据')).catch(e=>{setSync('上传失败：'+e.message);toast(e.message)});
 $('#down').onclick=()=>{if(!S.gist.token){toast('请先保存 Token');return}confirmDlg('用云端数据覆盖本机？本机当前数据会先另存一份备份。',async()=>{try{setSync('下载中…');const rb=await remoteBlob();if(!rb)throw new Error('云端暂无数据');await adoptBlob(rb,'云端恢复');S.gist.last=S.updatedAt;await save({keepTime:true,noSync:true});setSync('已同步 '+fmtT(Date.now()))}catch(e){setSync('恢复失败：'+e.message);toast(e.message)}})};
+document.addEventListener('keydown',async e=>{if(e.key==='Escape'){if($('#dlg').classList.contains('on')){$('#dlg').classList.remove('on');if(!editing)closeSheets()}else if(editing){await commitEditor();closeSheets()}else if(screenOnly)$('#l-back').click()}
+ else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(editing){const id=editing.id;await commitEditor();const n=S.notes.find(x=>x.id===id);if(n){editing=JSON.parse(JSON.stringify(n));renderEdMeta()}toast('已保存')}}});
 /* ---------- boot ---------- */
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
